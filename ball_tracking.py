@@ -4,6 +4,7 @@
 
 # import the necessary packages
 from collections import deque
+from random import randint
 import numpy as np
 import argparse
 import imutils
@@ -44,31 +45,58 @@ else:
 	camera = cv2.VideoCapture(args["video"])
 
 # keep looping
+picks = []
+flag = 0
+xavg = 0
+yavg = 0
+xbvg = 0
+ybvg = 0
+check = True
+count = 0
 while True:
 	# grab the current frame
 	(grabbed, frame) = camera.read()
-    
 
 	# if we are viewing a video and we did not grab a frame,
 	# then we have reached the end of the video
 	if args.get("video") and not grabbed:
 		break
 
-	orig = frame.copy()
-	(rects, weights) = hog.detectMultiScale(orig, winStride=(4, 4),padding=(8, 8), scale=1.05)
-	# draw the original bounding boxes
-	for (x, y, w, h) in rects:
-		cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 0, 255), 2)
-
 	# apply non-maxima suppression to the bounding boxes using a
 	# fairly large overlap threshold to try to maintain overlapping
 	# boxes that are still people
-	rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
-	pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
-    # draw the final bounding boxes
-	for (xA, yA, xB, yB) in pick:
-		cv2.rectangle(frame, (xA, yA), (xB, yB), (0, 255, 0), 2)
-	
+	if check == True:
+		orig = frame.copy()
+		(rects, weights) = hog.detectMultiScale(orig, winStride=(4, 4),padding=(8, 8), scale=1.05)
+		# draw the original bounding boxes
+		for (x, y, w, h) in rects:
+			cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 0, 255), 2)
+		rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
+		pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
+		# draw the final bounding boxes
+		if len(pick) > 0:
+			(xA, yA, xB, yB) = pick[0]	
+			if xA <= 450:	
+				count+=1
+				xavg = xavg + xA
+				yavg = yavg + yA
+				xbvg = xbvg + xB
+				ybvg = ybvg + yB
+				#print xA, 400-yA, xB, 400-yB
+				if count == 10:
+					check = False
+					xavg = xavg / count
+					yavg = yavg / count
+					xbvg = xbvg / count
+					ybvg = ybvg / count	
+					#print "Xvalues: ", xavg, xbvg
+	if xavg!=0 and count == 10:
+		xcenter = (xavg + xbvg) / 2.0
+		#print "center point: ", xcenter, 400-ybvg
+		if randint(0,100)%2 == 0:
+			cv2.rectangle(frame, (xavg+1, yavg+1), (xbvg+1, ybvg+1), (0, 255, 0), 2)
+		else:
+			cv2.rectangle(frame, (xavg-randint(0,5), yavg-randint(0,5)), (xbvg-randint(0,5), ybvg-randint(0,5)), (0, 255, 0), 2)
     ##
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
@@ -103,7 +131,8 @@ while True:
 		if True:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
-			if x > 345 and (400-y) > 95:
+			#print x, ',' , (400-y)#
+			if x > xavg - 50 and x < xbvg + 50:
 				print x, ',' , (400-y)
 			cv2.circle(frame, (int(x), int(y)), int(radius),
 				(0, 255, 255), 2)

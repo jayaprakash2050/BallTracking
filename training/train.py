@@ -20,10 +20,10 @@ Y_train = np.reshape(Y_train, (len(Y_train)))
 Y_test = np.reshape(Y_test, (len(Y_test)))
 
 # clf = naive_bayes.GaussianNB()
-# clf = SVC(kernel='poly')
+clf = SVC(kernel='poly')
 # clf = DecisionTreeClassifier()
 # clf = LinearSVC()
-clf = RandomForestClassifier()
+# clf = RandomForestClassifier()
 clf.fit(X_train, Y_train)
 
 print metrics.accuracy_score(Y_test, clf.predict(X_test))

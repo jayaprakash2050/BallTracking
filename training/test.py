@@ -1,4 +1,4 @@
-from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import LinearSVC, SVC
 from sklearn.externals import joblib
 
 class NBPredictor(object):

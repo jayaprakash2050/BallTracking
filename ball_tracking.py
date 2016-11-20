@@ -11,6 +11,7 @@ import imutils
 from imutils.object_detection import non_max_suppression
 from imutils import paths
 import cv2
+import sys
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -53,6 +54,7 @@ xbvg = 0
 ybvg = 0
 check = True
 count = 0
+ballcount = 1
 while True:
 	# grab the current frame
 	(grabbed, frame) = camera.read()
@@ -157,12 +159,16 @@ while True:
 	cv2.imshow("Frame", frame)
 	frame_out = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
 	out.write(frame_out)
-	key = cv2.waitKey(1) & 0xFF
+	key = cv2.waitKey(30) & 0xFF
+
 
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):
-		break
+		print '\nBall: '+str(ballcount)+'\n'
+		sys.stdout.flush()
+		ballcount += 1
 
+		raw_input()
 # cleanup the camera and close any open windows
 camera.release()
 out.release()

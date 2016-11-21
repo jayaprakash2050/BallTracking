@@ -34,7 +34,7 @@ greenUpper = (0, 0, 255)
 pts = deque(maxlen=args["buffer"])
 
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-out = cv2.VideoWriter('output_tracked.avi', fourcc, 20.0, (640, 400), True)
+out = cv2.VideoWriter('ball-3-only-tracked.mov', fourcc, 20.0, (640, 400), True)
 
 # if a video path was not supplied, grab the reference
 # to the webcam
@@ -58,7 +58,6 @@ ballcount = 1
 while True:
 	# grab the current frame
 	(grabbed, frame) = camera.read()
-
 	# if we are viewing a video and we did not grab a frame,
 	# then we have reached the end of the video
 	if args.get("video") and not grabbed:
@@ -85,14 +84,14 @@ while True:
 				xbvg = xbvg + xB
 				ybvg = ybvg + yB
 				#print xA, 400-yA, xB, 400-yB
-				if count == 10:
+				if count == 3:
 					check = False
 					xavg = xavg / count
 					yavg = yavg / count
 					xbvg = xbvg / count
 					ybvg = ybvg / count	
 					#print "Xvalues: ", xavg, xbvg
-	if xavg!=0 and count == 10:
+	if xavg!=0 and count == 3:
 		xcenter = (xavg + xbvg) / 2.0
 		#print "center point: ", xcenter, 400-ybvg
 		if randint(0,100)%2 == 0:

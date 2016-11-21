@@ -8,12 +8,10 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import random
 
-def main():
+def process_file(filename, test=False):
     dataset = []
     result = []
-    with open('new-output.csv', 'r') as raw_file:
-        processed_file = open('output-goodshots-processed-x.csv', 'w')
-        processed_labels = open('output-goodshots-processed-y.csv', 'w')
+    with open(filename, 'r') as raw_file:
         shape = (640, 400)
         rows, cols = 640, 400
         sparse_matrix = sps.coo_matrix((rows, cols))
@@ -41,9 +39,19 @@ def main():
                         sparse_matrix = sps.coo_matrix((rows, cols))
                         row = []
                         col = []
+        if test == True:
+            r = np.array(row)
+            c = np.array(col)
+            d = np.ones((len(r),))
+            sparse_matrix = sparse_matrix + sps.coo_matrix((d, (r, c)), shape=(rows, cols))
+            dataset.append(sparse_matrix.toarray().flatten())                
+            sparse_matrix = sps.coo_matrix((rows, cols))
+                
+    return (dataset, result)
 
-    X = dataset
-    Y = result
+def main():
+    X, Y = process_file('new-output.csv')
+    
     print len(X), len(Y)
     print len(X[0]), len(X[1])
     #print X[0]
@@ -65,8 +73,12 @@ def main():
     print metrics.accuracy_score(Y_train, clf.predict(X_train))
     print 'prediction with test data'
     print metrics.accuracy_score(Y_test, clf.predict(X_test))
-    print 'confusion matrix'
-    print metrics.confusion_matrix(Y_test, clf.predict(X_test))
+    #print 'confusion matrix'
+    #print metrics.confusion_matrix(Y_test, clf.predict(X_test))
+    print 'Testing with new data'
+    A, B = process_file('ball-3.csv', True)
+    print A
+    print 'Cover' if clf.predict(A) == 0 else 'Straight'
     #print clf.predict(X_test)
     #print Y_test
 

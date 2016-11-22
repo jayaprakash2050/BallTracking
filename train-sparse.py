@@ -7,6 +7,12 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import random
+import argparse
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--input",
+    help="path to the input csv file")
+args = vars(ap.parse_args())
 
 def process_file(filename, test=False):
     dataset = []
@@ -69,18 +75,37 @@ def main():
     # clf = LinearSVC()
     # clf = RandomForestClassifier()
     clf.fit(X_train, Y_train)
-    print 'prediction with train data'
+    print 'prediction with train data - Accuracy'
     print metrics.accuracy_score(Y_train, clf.predict(X_train))
-    print 'prediction with test data'
+    print 'prediction with test data - Accuracy'
     print metrics.accuracy_score(Y_test, clf.predict(X_test))
     #print 'confusion matrix'
     #print metrics.confusion_matrix(Y_test, clf.predict(X_test))
-    print 'Testing with new data'
-    A, B = process_file('ball-3.csv', True)
-    print A
-    print 'Cover' if clf.predict(A) == 0 else 'Straight'
-    #print clf.predict(X_test)
-    #print Y_test
+    if not args.get("input", False):
+        print 'Predicting the new data'
+        A, B = process_file(args['input'], True)
+        #print A
+        print 'Predicted Shot to be played: ',
+        print 'Cover' if clf.predict(A) == 0 else 'Straight'
+        #print clf.predict(X_test)
+        #print Y_test
 
 if __name__ == '__main__':
     main()
+
+
+'''
+python background.py -vi ../ball-3-only.mov -vo ../ball-3-only-bgrm.avi
+
+python ball_tracking.py -vi ../ball-3-only-bgrm.avi -vo ../ball-3-tracked.avi >> ball-3.csv -sh 1
+
+python train-sparse.py -i ball-3.csv
+
+
+
+python background.py -vi ../new.mov -vo ../new-shots-output.mov
+
+python ball_tracking.py -vi ../new-shots-output.mov -vo ../new-shots-output-1.avi
+
+python train-sparse.py -i new-output.csv
+'''

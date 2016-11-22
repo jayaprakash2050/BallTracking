@@ -15,10 +15,14 @@ import sys
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video",
+ap.add_argument("-vi", "--video",
 	help="path to the (optional) video file")
 ap.add_argument("-b", "--buffer", type=int, default=64,
 	help="max buffer size")
+ap.add_argument("-vo", "--videoout",
+	help="path to the output video file")
+ap.add_argument("-sh", "--show",
+	help="for displaying")
 args = vars(ap.parse_args())
 
 hog = cv2.HOGDescriptor()
@@ -34,7 +38,7 @@ greenUpper = (0, 0, 255)
 pts = deque(maxlen=args["buffer"])
 
 fourcc = cv2.VideoWriter_fourcc(*'MJPG')
-out = cv2.VideoWriter('ball-3-only-tracked.mov', fourcc, 20.0, (640, 400), True)
+out = cv2.VideoWriter(args['videoout'], fourcc, 20.0, (640, 400), True)
 
 # if a video path was not supplied, grab the reference
 # to the webcam
@@ -71,7 +75,7 @@ while True:
 		(rects, weights) = hog.detectMultiScale(orig, winStride=(4, 4),padding=(8, 8), scale=1.05)
 		# draw the original bounding boxes
 		for (x, y, w, h) in rects:
-			cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 0, 255), 2)
+			cv2.rectangle(orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
 		rects = np.array([[x, y, x + w, y + h] for (x, y, w, h) in rects])
 		pick = non_max_suppression(rects, probs=None, overlapThresh=0.65)
 		# draw the final bounding boxes
@@ -95,9 +99,9 @@ while True:
 		xcenter = (xavg + xbvg) / 2.0
 		#print "center point: ", xcenter, 400-ybvg
 		if randint(0,100)%2 == 0:
-			cv2.rectangle(frame, (xavg+1, yavg+1), (xbvg+1, ybvg+1), (0, 255, 0), 2)
+			cv2.rectangle(frame, (xavg+1, yavg+1), (xbvg+1, ybvg+1), (0, 0, 255), 2)
 		else:
-			cv2.rectangle(frame, (xavg-randint(0,5), yavg-randint(0,5)), (xbvg-randint(0,5), ybvg-randint(0,5)), (0, 255, 0), 2)
+			cv2.rectangle(frame, (xavg-randint(0,5), yavg-randint(0,5)), (xbvg-randint(0,5), ybvg-randint(0,5)), (0, 0, 255), 2)
     ##
 	# resize the frame, blur it, and convert it to the HSV
 	# color space
@@ -155,7 +159,8 @@ while True:
 		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
 
 	# show the frame to our screen
-	cv2.imshow("Frame", frame)
+	if not args.get("show", False):
+		cv2.imshow("Frame", frame)
 	frame_out = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
 	out.write(frame_out)
 	key = cv2.waitKey(30) & 0xFF
